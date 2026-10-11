@@ -135,7 +135,7 @@ func (h *Handler) DailySummary(c echo.Context) error {
 	return httpx.OK(c, resp)
 }
 
-// GET /attendance/photo/:id — serve foto
+// GET /attendance/photo/:id — serve foto (support token via header ATAU query param utk <img> tag)
 func (h *Handler) Photo(c echo.Context) error {
 	id, _ := httpx.ParseID(c, "id")
 	if id <= 0 {
@@ -164,8 +164,10 @@ func Register(g *echo.Group, db *gorm.DB, authMW echo.MiddlewareFunc) {
 	att := g.Group("/attendance", authMW, middleware.RequirePermission("pegawai.read"))
 	att.GET("", h.List)
 	att.GET("/daily-summary", h.DailySummary)
-	att.GET("/photo/:id", h.Photo)
 	att.GET("/:id", h.Get)
+
+	// Foto: tanpa permission check — cukup auth (dipakai <img> tag di web via query param)
+	g.GET("/attendance/photo/:id", h.Photo, authMW)
 }
 
 func parseF64(v string) float64 {

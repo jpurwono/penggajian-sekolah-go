@@ -32,16 +32,25 @@ type UserLoader interface {
 }
 
 // Auth memverifikasi Bearer token dan menyuntikkan user (beserta permission) ke context.
+// Token bisa dari header Authorization ATAU query param ?token= (untuk <img> tag).
 func Auth(loader UserLoader, jwtSecret string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			tokenStr := ""
+
 			header := c.Request().Header.Get(echo.HeaderAuthorization)
 			const prefix = "Bearer "
-			if !strings.HasPrefix(header, prefix) {
+			if strings.HasPrefix(header, prefix) {
+				tokenStr = strings.TrimPrefix(header, prefix)
+			} else if qToken := c.QueryParam("token"); qToken != "" {
+				tokenStr = qToken
+			}
+
+			if tokenStr == "" {
 				return httpx.ErrUnauthorized(c, "Token akses tidak ditemukan")
 			}
 
-			userID, err := security.ParseAccessToken(jwtSecret, strings.TrimPrefix(header, prefix))
+			userID, err := security.ParseAccessToken(jwtSecret, tokenStr)
 			if err != nil {
 				return httpx.ErrUnauthorized(c, "Sesi berakhir, silakan masuk kembali")
 			}
