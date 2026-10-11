@@ -78,5 +78,38 @@ func Register(g *echo.Group, db *gorm.DB, authMW echo.MiddlewareFunc) {
 	grp.GET("/payroll-summary", h.PayrollSummary)
 	grp.GET("/purchases-summary", h.PurchasesSummary)
 	grp.GET("/broken-assets", h.BrokenAssets)
+	grp.GET("/spp-summary", h.SppSummary)
 	grp.GET("/employee-type-counts", h.EmployeeTypeCounts)
+}
+
+func (h *Handler) SppSummary(c echo.Context) error {
+	year := parseYear(c, time.Now().Year())
+
+	months, err := h.repo.SppMonthlySummary(c.Request().Context(), year)
+	if err != nil {
+		return httpx.ErrInternal(c, "Gagal memuat rekap bulanan SPP")
+	}
+
+	students, err := h.repo.SppStudentSummary(c.Request().Context(), year)
+	if err != nil {
+		return httpx.ErrInternal(c, "Gagal memuat rekap siswa SPP")
+	}
+
+	totals := &SppMonthRow{MonthName: "TOTAL"}
+	for _, m := range months {
+		totals.TotalBills += m.TotalBills
+		totals.PaidCount += m.PaidCount
+		totals.PartialCount += m.PartialCount
+		totals.UnpaidCount += m.UnpaidCount
+		totals.TotalBilled += m.TotalBilled
+		totals.TotalCollected += m.TotalCollected
+		totals.TotalOutstanding += m.TotalOutstanding
+	}
+
+	return httpx.OK(c, &SppSummary{
+		Year:     year,
+		Months:   months,
+		Students: students,
+		Totals:   totals,
+	})
 }

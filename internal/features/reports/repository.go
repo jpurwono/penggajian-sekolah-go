@@ -147,3 +147,112 @@ func (r *Repository) BrokenAssets(ctx context.Context, condition string) ([]*Bro
 	`, args...).Scan(&rows).Error
 	return rows, err
 }
+
+// ── SPP Payment Summary ──
+
+type SppMonthRow struct {
+	Month          int    `json:"month"`
+	MonthName      string `json:"month_name"`
+	TotalBills     int64  `json:"total_bills"`
+	PaidCount      int64  `json:"paid_count"`
+	PartialCount   int64  `json:"partial_count"`
+	UnpaidCount    int64  `json:"unpaid_count"`
+	TotalBilled    int64  `json:"total_billed"`
+	TotalCollected int64  `json:"total_collected"`
+	TotalOutstanding int64 `json:"total_outstanding"`
+}
+
+type SppStudentRow struct {
+	StudentID   int64  `json:"student_id"`
+	StudentNIS  string `json:"student_nis"`
+	StudentName string `json:"student_name"`
+	ClassName   *string `json:"class_name"`
+	TotalBills  int64  `json:"total_bills"`
+	PaidCount   int64  `json:"paid_count"`
+	PartialCount int64 `json:"partial_count"`
+	UnpaidCount int64  `json:"unpaid_count"`
+	TotalBilled int64  `json:"total_billed"`
+	TotalPaid   int64  `json:"total_paid"`
+	TotalOutstanding int64 `json:"total_outstanding"`
+	Status      string `json:"status"`
+	StatusLabel string `json:"status_label"`
+}
+
+type SppSummary struct {
+	Year           int              `json:"year"`
+	Months         []*SppMonthRow   `json:"months"`
+	Students       []*SppStudentRow `json:"students"`
+	Totals         *SppMonthRow     `json:"totals"`
+}
+
+var reportMonthNames = map[int]string{
+	1: "Januari", 2: "Februari", 3: "Maret", 4: "April", 5: "Mei", 6: "Juni",
+	7: "Juli", 8: "Agustus", 9: "September", 10: "Oktober", 11: "November", 12: "Desember",
+}
+
+func (r *Repository) SppMonthlySummary(ctx context.Context, year int) ([]*SppMonthRow, error) {
+	rows := []*SppMonthRow{}
+	err := r.db.WithContext(ctx).Raw(`
+		SELECT
+			COALESCE(b.period_month, 0) AS month,
+			COUNT(*) as total_bills,
+			COUNT(*) FILTER (WHERE b.status = 'paid') as paid_count,
+			COUNT(*) FILTER (WHERE b.status = 'partial') as partial_count,
+			COUNT(*) FILTER (WHERE b.status = 'unpaid') as unpaid_count,
+			COALESCE(SUM(b.amount), 0) as total_billed,
+			COALESCE(SUM(b.paid_amount), 0) as total_collected,
+			COALESCE(SUM(b.amount - b.paid_amount), 0) as total_outstanding
+		FROM spp_bills b
+		WHERE b.period_year = ?
+		GROUP BY COALESCE(b.period_month, 0)
+		ORDER BY COALESCE(b.period_month, 0)
+	`, year).Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		if row.Month == 0 {
+			row.MonthName = "Non-Bulanan"
+		} else if name, ok := reportMonthNames[row.Month]; ok {
+			row.MonthName = name
+		}
+	}
+	return rows, nil
+}
+
+func (r *Repository) SppStudentSummary(ctx context.Context, year int) ([]*SppStudentRow, error) {
+	rows := []*SppStudentRow{}
+	err := r.db.WithContext(ctx).Raw(`
+		SELECT
+			s.id as student_id, s.nis as student_nis, s.full_name as student_name, s.class_name,
+			COUNT(b.id) as total_bills,
+			COUNT(b.id) FILTER (WHERE b.status = 'paid') as paid_count,
+			COUNT(b.id) FILTER (WHERE b.status = 'partial') as partial_count,
+			COUNT(b.id) FILTER (WHERE b.status = 'unpaid') as unpaid_count,
+			COALESCE(SUM(b.amount), 0) as total_billed,
+			COALESCE(SUM(b.paid_amount), 0) as total_paid,
+			COALESCE(SUM(b.amount - b.paid_amount), 0) as total_outstanding
+		FROM students s
+		LEFT JOIN spp_bills b ON b.student_id = s.id AND b.period_year = ?
+		WHERE s.deleted_at IS NULL AND s.is_active = true
+		GROUP BY s.id, s.nis, s.full_name, s.class_name
+		HAVING COUNT(b.id) > 0
+		ORDER BY s.full_name ASC
+	`, year).Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		if row.TotalOutstanding <= 0 {
+			row.Status = "lunas"
+			row.StatusLabel = "Lunas"
+		} else if row.TotalPaid > 0 {
+			row.Status = "sebagian"
+			row.StatusLabel = "Sebagian"
+		} else {
+			row.Status = "nunggak"
+			row.StatusLabel = "Nunggak"
+		}
+	}
+	return rows, nil
+}
