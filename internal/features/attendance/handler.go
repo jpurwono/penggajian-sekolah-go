@@ -166,8 +166,8 @@ func Register(g *echo.Group, db *gorm.DB, authMW echo.MiddlewareFunc) {
 	att.GET("/daily-summary", h.DailySummary)
 	att.GET("/:id", h.Get)
 
-	// Foto: tanpa permission check — cukup auth (dipakai <img> tag di web via query param)
-	g.GET("/attendance/photo/:id", h.Photo, authMW)
+	// Foto: publik tanpa auth — untuk <img> tag di web (internal school app)
+	g.GET("/attendance/photo/:id", h.Photo)
 }
 
 func parseF64(v string) float64 {
