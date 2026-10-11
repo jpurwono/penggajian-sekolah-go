@@ -3,6 +3,7 @@ package middleware
 
 import (
 	"os"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	echomw "github.com/labstack/echo/v4/middleware"
