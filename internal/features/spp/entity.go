@@ -45,6 +45,7 @@ type Bill struct {
 	ID          int64     `gorm:"primaryKey"`
 	BillNo      string    `gorm:"column:bill_no"`
 	StudentID   int64     `gorm:"column:student_id"`
+	FeeTypeID   *int64    `gorm:"column:fee_type_id"`
 	Name        string    `gorm:"column:name"`
 	PeriodMonth *int      `gorm:"column:period_month"`
 	PeriodYear  *int      `gorm:"column:period_year"`

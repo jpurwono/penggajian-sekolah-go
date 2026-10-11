@@ -36,5 +36,14 @@ func Register(g *echo.Group, db *gorm.DB, authMW echo.MiddlewareFunc) {
 	payments.GET("", h.ListPayments)
 	payments.GET("/:id", h.GetPayment)
 
+	feeTypes := g.Group("/spp/fee-types", authMW, mw.RequirePermission("spp.read"))
+	feeTypeSvc := NewFeeTypeService(db, NewFeeTypeRepository(db), NewRepository(db))
+	fth := NewFeeTypeHandler(feeTypeSvc)
+	feeTypes.GET("", fth.List)
+	feeTypes.POST("", fth.Create, mw.RequirePermission("spp.create"))
+	feeTypes.PUT("/:id", fth.Update, mw.RequirePermission("spp.update"))
+	feeTypes.DELETE("/:id", fth.Delete, mw.RequirePermission("spp.delete"))
+	g.POST("/spp/bills/generate-yearly", fth.GenerateYearly, authMW, mw.RequirePermission("spp.create"))
+
 	g.GET("/spp/summary", h.YearSummary, authMW, mw.RequirePermission("spp.read"))
 }
