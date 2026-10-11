@@ -2,17 +2,25 @@
 package middleware
 
 import (
+	"os"
+
 	"github.com/labstack/echo/v4"
 	echomw "github.com/labstack/echo/v4/middleware"
 )
 
-// CORS mengizinkan akses dari origin web dev (localhost:3000).
+// CORS mengizinkan akses dari origin web yang terdaftar.
+// Origin tambahan bisa diset via environment CORS_ORIGINS (dipisah koma).
 func CORS() echo.MiddlewareFunc {
+	origins := []string{
+		"http://localhost:3000",
+		"http://127.0.0.1:3000",
+		"https://smpmawaddah.levobyte.com",
+	}
+	if env := os.Getenv("CORS_ORIGINS"); env != "" {
+		origins = append(origins, strings.Split(env, ",")...)
+	}
 	return echomw.CORSWithConfig(echomw.CORSConfig{
-		AllowOrigins: []string{
-			"http://localhost:3000",
-			"http://127.0.0.1:3000",
-		},
+		AllowOrigins:     origins,
 		AllowMethods:     []string{echo.GET, echo.POST, echo.PUT, echo.PATCH, echo.DELETE, echo.OPTIONS},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		AllowCredentials: true,
