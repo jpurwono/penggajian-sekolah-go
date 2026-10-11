@@ -15,6 +15,8 @@ func CORS() echo.MiddlewareFunc {
 	origins := []string{
 		"http://localhost:3000",
 		"http://127.0.0.1:3000",
+		"http://100.86.43.118:3002",
+		"http://100.86.43.118:8090",
 		"https://smpmawaddah.levobyte.com",
 	}
 	if env := os.Getenv("CORS_ORIGINS"); env != "" {
