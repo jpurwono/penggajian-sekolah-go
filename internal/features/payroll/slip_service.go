@@ -109,6 +109,10 @@ func (s *SlipService) Generate(ctx context.Context, periodID int64) (*GenerateRe
 		if err != nil {
 			return err
 		}
+		attStats, err := s.slip.AttendanceStats(ctx, tx, period)
+		if err != nil {
+			return err
+		}
 		if err := s.slip.DeletePeriodSlips(ctx, tx, periodID); err != nil {
 			return err
 		}
@@ -116,7 +120,7 @@ func (s *SlipService) Generate(ctx context.Context, periodID int64) (*GenerateRe
 		seq := 0
 		for _, emp := range employees {
 			seq++
-			jam := oldJam[emp.ID]
+			jam := mergeJam(oldJam[emp.ID], attStats[emp.ID])
 
 			slip := &Payslip{
 				PeriodID:       periodID,
@@ -185,6 +189,74 @@ func (s *SlipService) Generate(ctx context.Context, periodID int64) (*GenerateRe
 		SlipCount: count,
 		Message:   fmt.Sprintf("%d slip berhasil digenerate", count),
 	}, nil
+}
+
+// mergeJam mengisi jam yang masih kosong (manual belum diisi) dari data absensi otomatis.
+func mergeJam(manual *slipJamRow, auto *attendanceStatRow) *slipJamRow {
+	if auto == nil {
+		return manual
+	}
+	res := &slipJamRow{}
+	if manual != nil {
+		res = &slipJamRow{JamMengajar: manual.JamMengajar, JamTidakHadir: manual.JamTidakHadir, HariHadir: manual.HariHadir}
+	}
+	if res.JamMengajar == nil && auto.JamMengajar > 0 {
+		v := auto.JamMengajar
+		res.JamMengajar = &v
+	}
+	if res.HariHadir == nil && auto.HariHadir > 0 {
+		v := auto.HariHadir
+		res.HariHadir = &v
+	}
+	return res
+}
+
+// ImportAttendance menarik jam mengajar & hari hadir dari attendance_records
+// (aplikasi Android) ke seluruh slip periode, lalu menghitung ulang slip.
+// Jam tidak hadir tidak ditimpa. Periode harus draft.
+func (s *SlipService) ImportAttendance(ctx context.Context, periodID int64) (*GenerateResult, error) {
+	period, err := s.repo.FindPeriod(ctx, periodID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	if period.Status != StatusDraft {
+		return nil, errors.New("hanya periode draft yang bisa menarik data absensi")
+	}
+
+	oldJam, err := s.slip.ListPeriodJam(ctx, s.db, periodID)
+	if err != nil {
+		return nil, err
+	}
+	if len(oldJam) == 0 {
+		return nil, errors.New("belum ada slip — generate slip terlebih dahulu")
+	}
+
+	stats, err := s.slip.AttendanceStats(ctx, s.db, period)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		for empID, st := range stats {
+			if err := s.slip.SetJamFromImport(ctx, tx, periodID, empID, st.JamMengajar, st.HariHadir); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := s.Generate(ctx, periodID)
+	if err != nil {
+		return nil, err
+	}
+	res.Message = fmt.Sprintf("Absensi %d pegawai ditarik; %d slip dihitung ulang", len(stats), res.SlipCount)
+	return res, nil
 }
 
 func jamJam(jam *slipJamRow, field string) *int {

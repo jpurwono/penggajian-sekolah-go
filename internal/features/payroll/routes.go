@@ -32,6 +32,7 @@ func Register(g *echo.Group, svc *Service, slipSvc *SlipService, authMW echo.Mid
 	periods.DELETE("/:id", h.DeletePeriod, mw.RequirePermission("penggajian.delete"))
 	periods.POST("/:id/generate", sh.Generate, mw.RequirePermission("penggajian.create"))
 	periods.PUT("/:id/attendance", sh.UpdateAttendance, mw.RequirePermission("penggajian.update"))
+	periods.POST("/:id/attendance/import", sh.ImportAttendance, mw.RequirePermission("penggajian.update"))
 	periods.POST("/:id/approve", h.ApprovePeriod, mw.RequirePermission("penggajian.approve"))
 	periods.POST("/:id/pay", h.PayPeriod, mw.RequirePermission("penggajian.approve"))
 	periods.POST("/:id/cancel", h.CancelPeriod, mw.RequirePermission("penggajian.approve"))

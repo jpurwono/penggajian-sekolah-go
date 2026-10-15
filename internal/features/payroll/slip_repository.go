@@ -2,6 +2,7 @@ package payroll
 
 import (
 	"context"
+	"time"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -55,6 +56,51 @@ func (r *SlipRepository) ListAssignments(ctx context.Context) ([]*assignmentRow,
 		ORDER BY e.full_name ASC, pc.type ASC, pc.code ASC
 	`).Scan(&list).Error
 	return list, err
+}
+
+// attendanceStatRow rekap absensi per pegawai dari aplikasi Android.
+type attendanceStatRow struct {
+	EmployeeID  int64 `gorm:"column:employee_id"`
+	HariHadir   int   `gorm:"column:hari_hadir"`
+	JamMengajar int   `gorm:"column:jam_mengajar"`
+}
+
+// AttendanceStats menghitung statistik absensi (hari hadir & jam mengajar)
+// dari attendance_records pada rentang bulan periode (zona Asia/Jakarta).
+func (r *SlipRepository) AttendanceStats(ctx context.Context, tx *gorm.DB, period *PayrollPeriod) (map[int64]*attendanceStatRow, error) {
+	loc, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		return nil, err
+	}
+	start := time.Date(period.PeriodYear, time.Month(period.PeriodMonth), 1, 0, 0, 0, 0, loc)
+	end := start.AddDate(0, 1, 0)
+
+	rows := []*attendanceStatRow{}
+	err = tx.WithContext(ctx).Raw(`
+		SELECT employee_id,
+			COUNT(DISTINCT (recorded_at AT TIME ZONE 'Asia/Jakarta')::date) FILTER (WHERE jenis = 'hadir') AS hari_hadir,
+			COUNT(*) FILTER (WHERE jenis = 'kelas') AS jam_mengajar
+		FROM attendance_records
+		WHERE recorded_at >= ? AND recorded_at < ? AND is_mock = false
+		GROUP BY employee_id
+	`, start, end).Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	out := map[int64]*attendanceStatRow{}
+	for _, row := range rows {
+		out[row.EmployeeID] = row
+	}
+	return out, nil
+}
+
+// SetJamFromImport menimpa jam mengajar & hari hadir dari data absensi;
+// jam tidak hadir tetap manual.
+func (r *SlipRepository) SetJamFromImport(ctx context.Context, tx *gorm.DB, periodID, employeeID int64, jamMengajar, hariHadir int) error {
+	return tx.WithContext(ctx).Exec(`
+		UPDATE payslips SET jam_mengajar = ?, hari_hadir = ?
+		WHERE period_id = ? AND employee_id = ?
+	`, jamMengajar, hariHadir, periodID, employeeID).Error
 }
 
 // ListPeriodJam mempertahankan data jam saat slip digenerate ulang.

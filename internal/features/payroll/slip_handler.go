@@ -152,6 +152,21 @@ func (h *SlipHandler) UpdateAttendance(c echo.Context) error {
 	return httpx.OKWithMessage(c, fmt.Sprintf("Data jam %d slip berhasil disimpan", count), nil)
 }
 
+func (h *SlipHandler) ImportAttendance(c echo.Context) error {
+	id, _ := httpx.ParseID(c, "id")
+	if id <= 0 {
+		return httpx.ErrBadRequest(c, "ID tidak valid")
+	}
+	res, err := h.svc.ImportAttendance(c.Request().Context(), id)
+	if err != nil {
+		return mapError(c, err)
+	}
+	audit.Log(c, h.svc.db, "update", "payroll_periods", id, nil, map[string]any{
+		"action": "import-attendance", "slip_count": res.SlipCount,
+	})
+	return httpx.OKWithMessage(c, res.Message, res)
+}
+
 func (h *SlipHandler) Recap(c echo.Context) error {
 	id, _ := httpx.ParseID(c, "id")
 	if id <= 0 {
