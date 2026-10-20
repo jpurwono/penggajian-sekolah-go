@@ -154,6 +154,9 @@ func (s *Service) Create(ctx context.Context, req SaveEmployeeRequest) (*Employe
 	if err := s.repo.Create(ctx, employee); err != nil {
 		return nil, err
 	}
+	if postCreateHook != nil {
+		_ = postCreateHook(ctx, employee)
+	}
 	return s.Get(ctx, employee.ID)
 }
 

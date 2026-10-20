@@ -3,6 +3,8 @@
 package router
 
 import (
+	"context"
+
 	"github.com/labstack/echo/v4"
 	echomw "github.com/labstack/echo/v4/middleware"
 	"gorm.io/gorm"
@@ -43,12 +45,19 @@ func New(cfg *config.Config, db *gorm.DB) *echo.Echo {
 	health.Register(v1, db, cfg)
 	auth.Register(v1, authSvc, authMW)
 	rbac.Register(v1, rbac.NewService(rbac.NewRepository(db)), authMW)
+	payrollRepo := payroll.NewRepository(db)
+	payrollSvc := payroll.NewService(payrollRepo)
+
+	// Pegawai baru otomatis menerima komponen dari template default sesuai tipe pegawainya.
+	employees.SetPostCreateHook(func(ctx context.Context, emp *employees.Employee) error {
+		return payrollSvc.ApplyDefaultTemplate(ctx, emp.ID, emp.EmployeeType)
+	})
+
 	employees.Register(v1, employees.NewService(employees.NewRepository(db)), authMW)
 
-	payrollRepo := payroll.NewRepository(db)
 	payroll.Register(
 		v1,
-		payroll.NewService(payrollRepo),
+		payrollSvc,
 		payroll.NewSlipService(db, payrollRepo, payroll.NewSlipRepository(db)),
 		authMW,
 	)

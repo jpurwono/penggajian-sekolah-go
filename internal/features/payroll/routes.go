@@ -24,6 +24,14 @@ func Register(g *echo.Group, svc *Service, slipSvc *SlipService, authMW echo.Mid
 	empComponents.PUT("/:id", h.UpdateEmployeeComponent, mw.RequirePermission("penggajian.update"))
 	empComponents.DELETE("/:id", h.DeleteEmployeeComponent, mw.RequirePermission("penggajian.delete"))
 
+	templates := g.Group("/payroll/templates", authMW, mw.RequirePermission("penggajian.read"))
+	templates.GET("", h.ListTemplates)
+	templates.GET("/:id", h.GetTemplate)
+	templates.POST("", h.CreateTemplate, mw.RequirePermission("penggajian.create"))
+	templates.PUT("/:id", h.UpdateTemplate, mw.RequirePermission("penggajian.update"))
+	templates.DELETE("/:id", h.DeleteTemplate, mw.RequirePermission("penggajian.delete"))
+	templates.POST("/:id/apply", h.ApplyTemplate, mw.RequirePermission("penggajian.update"))
+
 	periods := g.Group("/payroll/periods", authMW, mw.RequirePermission("penggajian.read"))
 	periods.GET("", h.ListPeriods)
 	periods.GET("/:id", h.GetPeriod)

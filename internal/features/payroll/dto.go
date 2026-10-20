@@ -180,3 +180,68 @@ type PayslipListResult struct {
 	Payslips []*PayslipResponse `json:"payslips"`
 	Meta     *httpx.Meta        `json:"meta"`
 }
+
+type TemplateComponentInput struct {
+	ComponentID int64   `json:"component_id"`
+	CalcMode    string  `json:"calc_mode"`
+	Amount      int64   `json:"amount"`
+	Note        *string `json:"note"`
+}
+
+type TemplateComponentResponse struct {
+	ID            int64     `json:"id"`
+	ComponentID   int64     `json:"component_id"`
+	ComponentCode string    `json:"component_code"`
+	ComponentName string    `json:"component_name"`
+	ComponentType string    `json:"component_type"`
+	CalcMode      string    `json:"calc_mode"`
+	Amount        int64     `json:"amount"`
+	Note          *string   `json:"note"`
+}
+
+type TemplateResponse struct {
+	ID             int64                        `json:"id"`
+	Name           string                       `json:"name"`
+	Description    *string                      `json:"description"`
+	EmployeeType   *string                      `json:"employee_type"`
+	IsDefault      bool                         `json:"is_default"`
+	IsActive       bool                         `json:"is_active"`
+	ComponentCount int64                        `json:"component_count"`
+	Components     []*TemplateComponentResponse `json:"components,omitempty"`
+	CreatedAt      time.Time                    `json:"created_at"`
+	UpdatedAt      time.Time                    `json:"updated_at"`
+}
+
+type SaveTemplateRequest struct {
+	Name         string                     `json:"name"`
+	Description  *string                    `json:"description"`
+	EmployeeType *string                    `json:"employee_type"`
+	IsDefault    bool                       `json:"is_default"`
+	IsActive     *bool                      `json:"is_active"`
+	Components   []TemplateComponentInput   `json:"components"`
+}
+
+type ApplyTemplateRequest struct {
+	EmployeeIDs  []int64 `json:"employee_ids"`
+	EmployeeType string  `json:"employee_type"`
+	Replace      bool    `json:"replace"`
+}
+
+type ApplyTemplateResult struct {
+	TemplateID        int64                     `json:"template_id"`
+	TemplateName      string                    `json:"template_name"`
+	EmployeesAffected int64                     `json:"employees_affected"`
+	ComponentsApplied int64                     `json:"components_applied"`
+	Skipped           []SkippedEmployee         `json:"skipped"`
+	Message           string                    `json:"message"`
+}
+
+type SkippedEmployee struct {
+	EmployeeID int64  `json:"employee_id"`
+	Reason     string `json:"reason"`
+}
+
+type TemplateListResult struct {
+	Templates []*TemplateResponse `json:"templates"`
+	Meta      *httpx.Meta         `json:"meta"`
+}

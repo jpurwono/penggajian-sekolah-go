@@ -53,6 +53,33 @@ type EmployeeComponent struct {
 
 func (EmployeeComponent) TableName() string { return "employee_components" }
 
+type PayrollTemplate struct {
+	ID           int64          `gorm:"primaryKey"`
+	Name         string         `gorm:"column:name"`
+	Description  *string        `gorm:"column:description"`
+	EmployeeType *string        `gorm:"column:employee_type"`
+	IsDefault    bool           `gorm:"column:is_default"`
+	IsActive     bool           `gorm:"column:is_active"`
+	CreatedAt    time.Time      `gorm:"column:created_at"`
+	UpdatedAt    time.Time      `gorm:"column:updated_at"`
+	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at;index"`
+}
+
+func (PayrollTemplate) TableName() string { return "payroll_templates" }
+
+type PayrollTemplateComponent struct {
+	ID          int64     `gorm:"primaryKey"`
+	TemplateID  int64     `gorm:"column:template_id"`
+	ComponentID int64     `gorm:"column:component_id"`
+	CalcMode    string    `gorm:"column:calc_mode"`
+	Amount      int64     `gorm:"column:amount"`
+	Note        *string   `gorm:"column:note"`
+	CreatedAt   time.Time `gorm:"column:created_at"`
+	UpdatedAt   time.Time `gorm:"column:updated_at"`
+}
+
+func (PayrollTemplateComponent) TableName() string { return "payroll_template_components" }
+
 type PayrollPeriod struct {
 	ID             int64          `gorm:"primaryKey"`
 	Name           string         `gorm:"column:name"`
