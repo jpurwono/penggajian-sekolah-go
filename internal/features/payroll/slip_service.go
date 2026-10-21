@@ -150,6 +150,12 @@ func (s *SlipService) Generate(ctx context.Context, periodID int64) (*GenerateRe
 				if jam != nil {
 					jamMengajar, jamTidakHadir, hariHadir = jam.JamMengajar, jam.JamTidakHadir, jam.HariHadir
 				}
+				// Honor mengajar per jam memakai jumlah jam mengajar bulanan pegawai
+				// saat data jam slip (manual/absensi) belum tersedia.
+				if a.CalcMode == CalcPerJamMengajar && jamMengajar == nil && emp.TeachingHours != nil && *emp.TeachingHours > 0 {
+					v := *emp.TeachingHours
+					jamMengajar = &v
+				}
 				amount, note, _ := resolveAssignmentAmount(a, jamMengajar, jamTidakHadir, hariHadir, cal)
 
 				componentID := a.ComponentID

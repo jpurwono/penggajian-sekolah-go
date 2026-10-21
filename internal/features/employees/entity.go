@@ -20,6 +20,7 @@ type Employee struct {
 	JoinDate     time.Time      `gorm:"column:join_date"`
 	EndDate      *time.Time     `gorm:"column:end_date"`
 	BaseSalary   int64          `gorm:"column:base_salary"`
+	TeachingHours *int          `gorm:"column:teaching_hours"`
 	BankName     *string        `gorm:"column:bank_name"`
 	BankAccount  *string        `gorm:"column:bank_account"`
 	PhotoURL     *string        `gorm:"column:photo_url"`

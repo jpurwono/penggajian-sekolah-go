@@ -14,6 +14,7 @@ type employeeLite struct {
 	FullName   string `gorm:"column:full_name"`
 	JobTitle   *string `gorm:"column:job_title"`
 	BaseSalary int64  `gorm:"column:base_salary"`
+	TeachingHours *int `gorm:"column:teaching_hours"`
 }
 
 type assignmentRow struct {
@@ -38,7 +39,7 @@ func NewSlipRepository(db *gorm.DB) *SlipRepository {
 func (r *SlipRepository) ListActiveEmployees(ctx context.Context) ([]*employeeLite, error) {
 	list := []*employeeLite{}
 	err := r.db.WithContext(ctx).Raw(`
-		SELECT id, employee_no, full_name, job_title, base_salary
+		SELECT id, employee_no, full_name, job_title, base_salary, teaching_hours
 		FROM employees WHERE deleted_at IS NULL AND is_active = true
 		ORDER BY full_name ASC
 	`).Scan(&list).Error

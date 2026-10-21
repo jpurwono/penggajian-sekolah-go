@@ -22,6 +22,7 @@ type EmployeeResponse struct {
 	JoinDate     string    `json:"join_date"`
 	EndDate      *string   `json:"end_date"`
 	BaseSalary   int64     `json:"base_salary"`
+	TeachingHours *int     `json:"teaching_hours"`
 	BankName     *string   `json:"bank_name"`
 	BankAccount  *string   `json:"bank_account"`
 	PhotoURL     *string   `json:"photo_url"`
@@ -47,6 +48,7 @@ type SaveEmployeeRequest struct {
 	JoinDate     string  `json:"join_date"`
 	EndDate      *string `json:"end_date"`
 	BaseSalary   int64   `json:"base_salary"`
+	TeachingHours *int   `json:"teaching_hours"`
 	BankName     *string `json:"bank_name"`
 	BankAccount  *string `json:"bank_account"`
 	PhotoURL     *string `json:"photo_url"`
@@ -76,6 +78,7 @@ func toResponse(e *Employee) *EmployeeResponse {
 		JoinDate:     e.JoinDate.Format(dateLayout),
 		EndDate:      formatDate(e.EndDate),
 		BaseSalary:   e.BaseSalary,
+		TeachingHours: e.TeachingHours,
 		BankName:     e.BankName,
 		BankAccount:  e.BankAccount,
 		PhotoURL:     e.PhotoURL,

@@ -57,6 +57,16 @@ func (s *Service) validate(ctx context.Context, req SaveEmployeeRequest, exclude
 	if req.BaseSalary < 0 {
 		return nil, errors.New("gaji pokok tidak boleh negatif")
 	}
+	var teachingHours *int
+	if req.TeachingHours != nil {
+		h := *req.TeachingHours
+		if h < 0 || h > 999 {
+			return nil, errors.New("jam mengajar harus antara 0 dan 999 jam per bulan")
+		}
+		if h > 0 {
+			teachingHours = &h
+		}
+	}
 	if req.Gender != nil && *req.Gender != "" && *req.Gender != "L" && *req.Gender != "P" {
 		return nil, errors.New("jenis kelamin harus L atau P")
 	}
@@ -101,6 +111,7 @@ func (s *Service) validate(ctx context.Context, req SaveEmployeeRequest, exclude
 		JoinDate:     *joinDate,
 		EndDate:      endDate,
 		BaseSalary:   req.BaseSalary,
+		TeachingHours: teachingHours,
 		BankName:     strPtr(deref(req.BankName)),
 		BankAccount:  strPtr(deref(req.BankAccount)),
 		PhotoURL:     strPtr(deref(req.PhotoURL)),
