@@ -70,7 +70,7 @@ func (r *Repository) Update(ctx context.Context, e *Employee) error {
 		Select(
 			"employee_no", "full_name", "gender", "birth_date", "address", "phone", "email",
 			"employee_type", "job_title", "join_date", "end_date", "base_salary",
-			"bank_name", "bank_account", "photo_url", "is_active",
+			"teaching_hours", "bank_name", "bank_account", "photo_url", "is_active",
 		).
 		Updates(e).Error
 }
