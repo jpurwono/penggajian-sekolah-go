@@ -1,3 +1,5 @@
+name: penggajian
+
 services:
   api:
     build:
@@ -18,4 +20,5 @@ services:
 
 volumes:
   uploads:
+    name: server_uploads
     driver: local
