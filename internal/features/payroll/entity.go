@@ -17,11 +17,12 @@ const (
 	CalcPerJamMengajar = "per_jam_mengajar"
 	CalcPerHariHadir   = "per_hari_hadir"
 	CalcPerJamMinggu1  = "per_jam_minggu1"
+	CalcTransport5HK   = "transport_5hk"
 )
 
 func IsValidCalcMode(m string) bool {
 	return m == CalcFixed || m == CalcPerJamHadir || m == CalcPerJamMengajar ||
-		m == CalcPerHariHadir || m == CalcPerJamMinggu1
+		m == CalcPerHariHadir || m == CalcPerJamMinggu1 || m == CalcTransport5HK
 }
 
 const ComponentCodeGajiPokok = "GP"

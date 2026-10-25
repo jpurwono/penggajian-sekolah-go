@@ -65,6 +65,25 @@ func FirstWeekWorkingDays(year, month, workDays int) int {
 	return count
 }
 
+// FirstWorkdaysEnd menghasilkan batas akhir (eksklusif) hari kerja ke-n bulan
+// (Senin–Jumat), zona Asia/Jakarta. Contoh: Oktober 2026 (tgl 1 = Kamis) →
+// hari kerja ke-5 adalah Rabu tgl 7 → batas = Kamis tgl 8 jam 00:00 WIB.
+func FirstWorkdaysEnd(year, month, n int) (time.Time, error) {
+	loc, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		return time.Time{}, err
+	}
+	day := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, loc)
+	found := 0
+	for found < n {
+		if wd := day.Weekday(); wd >= time.Monday && wd <= time.Friday {
+			found++
+		}
+		day = day.AddDate(0, 0, 1)
+	}
+	return day, nil
+}
+
 func effOrDefault(effectiveWeeks *float64) float64 {
 	if effectiveWeeks == nil || *effectiveWeeks <= 0 {
 		return 4.0

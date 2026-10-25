@@ -95,6 +95,41 @@ func (r *SlipRepository) AttendanceStats(ctx context.Context, tx *gorm.DB, perio
 	return out, nil
 }
 
+// KelasFirstWorkdays menghitung jumlah absen kelas (jenis='kelas', bukan mock)
+// per pegawai dari awal bulan periode sampai batas akhir hari kerja ke-n
+// (Senin–Jumat, zona Asia/Jakarta). Dipakai mode transport_5hk.
+func (r *SlipRepository) KelasFirstWorkdays(ctx context.Context, tx *gorm.DB, period *PayrollPeriod, n int) (map[int64]int, error) {
+	loc, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		return nil, err
+	}
+	start := time.Date(period.PeriodYear, time.Month(period.PeriodMonth), 1, 0, 0, 0, 0, loc)
+	end, err := FirstWorkdaysEnd(period.PeriodYear, period.PeriodMonth, n)
+	if err != nil {
+		return nil, err
+	}
+
+	rows := []*struct {
+		EmployeeID int64 `gorm:"column:employee_id"`
+		Total      int   `gorm:"column:total"`
+	}{}
+	err = tx.WithContext(ctx).Raw(`
+		SELECT employee_id, COUNT(*) AS total
+		FROM attendance_records
+		WHERE jenis = 'kelas' AND is_mock = false
+			AND recorded_at >= ? AND recorded_at < ?
+		GROUP BY employee_id
+	`, start, end).Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	out := map[int64]int{}
+	for _, row := range rows {
+		out[row.EmployeeID] = row.Total
+	}
+	return out, nil
+}
+
 // SetJamFromImport menimpa jam mengajar & hari hadir dari data absensi;
 // jam tidak hadir tetap manual.
 func (r *SlipRepository) SetJamFromImport(ctx context.Context, tx *gorm.DB, periodID, employeeID int64, jamMengajar, hariHadir int) error {

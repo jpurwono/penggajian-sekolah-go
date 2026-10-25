@@ -21,15 +21,18 @@ func NewSlipService(db *gorm.DB, repo *Repository, slipRepo *SlipRepository) *Sl
 	return &SlipService{db: db, repo: repo, slip: slipRepo}
 }
 
-// qtyFor menghitung kuantitas sesuai mode; nil bila data jam belum tersedia.
+// qtyFor menghitung kuantitas sesuai mode; nil bila data belum tersedia.
 // Untuk jam hadir: Jml Hadir = round(Jml Jam × mingguEfektif) − Jam Tidak Hadir.
 // Untuk jam minggu ke-1: Jml Jam × fraksi hari kerja pekan pertama (kalender).
-func qtyFor(mode string, jamMengajar, jamTidakHadir, hariHadir *int, cal periodCalendar) *int {
+// Untuk transport_5hk: jumlah absen kelas pada 5 hari kerja pertama bulan.
+func qtyFor(mode string, jamMengajar, jamTidakHadir, hariHadir, kelasAwal *int, cal periodCalendar) *int {
 	switch mode {
 	case CalcPerJamMengajar:
 		return jamMengajar
 	case CalcPerHariHadir:
 		return hariHadir
+	case CalcTransport5HK:
+		return kelasAwal
 	case CalcPerJamHadir:
 		if jamMengajar == nil {
 			return nil
@@ -113,6 +116,10 @@ func (s *SlipService) Generate(ctx context.Context, periodID int64) (*GenerateRe
 		if err != nil {
 			return err
 		}
+		kelasAwal, err := s.slip.KelasFirstWorkdays(ctx, tx, period, 5)
+		if err != nil {
+			return err
+		}
 		if err := s.slip.DeletePeriodSlips(ctx, tx, periodID); err != nil {
 			return err
 		}
@@ -156,7 +163,12 @@ func (s *SlipService) Generate(ctx context.Context, periodID int64) (*GenerateRe
 					v := *emp.TeachingHours
 					jamMengajar = &v
 				}
-				amount, note, _ := resolveAssignmentAmount(a, jamMengajar, jamTidakHadir, hariHadir, cal)
+				var kelasAwalQty *int
+				if n, ok := kelasAwal[emp.ID]; ok {
+					v := n
+					kelasAwalQty = &v
+				}
+				amount, note, _ := resolveAssignmentAmount(a, jamMengajar, jamTidakHadir, hariHadir, kelasAwalQty, cal)
 
 				componentID := a.ComponentID
 				items = append(items, &PayslipItem{
@@ -280,11 +292,11 @@ func jamJam(jam *slipJamRow, field string) *int {
 	return nil
 }
 
-func resolveAssignmentAmount(a *assignmentRow, jamMengajar, jamTidakHadir, hariHadir *int, cal periodCalendar) (int64, *string, bool) {
+func resolveAssignmentAmount(a *assignmentRow, jamMengajar, jamTidakHadir, hariHadir, kelasAwal *int, cal periodCalendar) (int64, *string, bool) {
 	if a.CalcMode == "" || a.CalcMode == CalcFixed {
 		return a.Amount, a.Note, false
 	}
-	qty := qtyFor(a.CalcMode, jamMengajar, jamTidakHadir, hariHadir, cal)
+	qty := qtyFor(a.CalcMode, jamMengajar, jamTidakHadir, hariHadir, kelasAwal, cal)
 	if qty == nil {
 		note := autoNote(0, a.Amount)
 		return 0, note, true
@@ -591,13 +603,24 @@ func (s *SlipService) syncAssignmentItems(ctx context.Context, tx *gorm.DB, peri
 		assignmentsByEmployee[a.EmployeeID] = append(assignmentsByEmployee[a.EmployeeID], a)
 	}
 
+	kelasAwal, err := s.slip.KelasFirstWorkdays(ctx, tx, period, 5)
+	if err != nil {
+		return err
+	}
+
 	for _, slip := range slips {
 		changed := false
 		keepIDs := make([]int64, 0, len(assignmentsByEmployee[slip.EmployeeID]))
 
+		var slipKelasAwal *int
+		if n, ok := kelasAwal[slip.EmployeeID]; ok {
+			v := n
+			slipKelasAwal = &v
+		}
+
 		for _, a := range assignmentsByEmployee[slip.EmployeeID] {
 			keepIDs = append(keepIDs, a.ComponentID)
-			amount, note, _ := resolveAssignmentAmount(a, slip.JamMengajar, slip.JamTidakHadir, slip.HariHadir, cal)
+			amount, note, _ := resolveAssignmentAmount(a, slip.JamMengajar, slip.JamTidakHadir, slip.HariHadir, slipKelasAwal, cal)
 
 			item, err := s.slip.FindAutoItem(ctx, tx, slip.ID, a.ComponentID)
 			if err != nil {
