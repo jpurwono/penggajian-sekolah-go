@@ -4,7 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 
-	"penggajian/server/internal/platform/config"
+	"penggajian/api/internal/platform/config"
 )
 
 // Register mendaftarkan routes fitur health ke group /api/v1.

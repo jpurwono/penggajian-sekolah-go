@@ -3,7 +3,7 @@ package inventory
 import (
 	"time"
 
-	"penggajian/server/internal/platform/httpx"
+	"penggajian/api/internal/platform/httpx"
 )
 
 type CategoryResponse struct {

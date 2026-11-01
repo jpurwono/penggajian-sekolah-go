@@ -1,6 +1,6 @@
 package auth
 
-import "penggajian/server/internal/platform/middleware"
+import "penggajian/api/internal/platform/middleware"
 
 type LoginRequest struct {
 	Username string `json:"username"`

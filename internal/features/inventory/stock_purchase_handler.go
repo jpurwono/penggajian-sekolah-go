@@ -3,7 +3,7 @@ package inventory
 import (
 	"github.com/labstack/echo/v4"
 
-	"penggajian/server/internal/platform/httpx"
+	"penggajian/api/internal/platform/httpx"
 )
 
 type MutationHandler struct {

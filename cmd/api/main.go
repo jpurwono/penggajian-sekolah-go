@@ -11,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"penggajian/server/internal/platform/config"
-	"penggajian/server/internal/platform/database"
-	"penggajian/server/internal/platform/router"
+	"penggajian/api/internal/platform/config"
+	"penggajian/api/internal/platform/database"
+	"penggajian/api/internal/platform/router"
 )
 
 func main() {

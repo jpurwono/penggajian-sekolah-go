@@ -3,7 +3,7 @@ package payroll
 import (
 	"time"
 
-	"penggajian/server/internal/platform/httpx"
+	"penggajian/api/internal/platform/httpx"
 )
 
 type ComponentResponse struct {

@@ -3,7 +3,7 @@ package akademik
 import (
 	"time"
 
-	"penggajian/server/internal/platform/httpx"
+	"penggajian/api/internal/platform/httpx"
 )
 
 type SubjectResponse struct {

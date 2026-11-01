@@ -5,8 +5,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"penggajian/server/internal/platform/httpx"
-	"penggajian/server/internal/platform/middleware"
+	"penggajian/api/internal/platform/httpx"
+	"penggajian/api/internal/platform/middleware"
 )
 
 type Handler struct {

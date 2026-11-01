@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 
-	"penggajian/server/internal/platform/config"
+	"penggajian/api/internal/platform/config"
 )
 
 type Handler struct {

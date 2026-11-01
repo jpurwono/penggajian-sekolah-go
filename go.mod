@@ -1,4 +1,4 @@
-module penggajian/server
+module penggajian/api
 
 go 1.26.0
 

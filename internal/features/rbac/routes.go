@@ -3,7 +3,7 @@ package rbac
 import (
 	"github.com/labstack/echo/v4"
 
-	mw "penggajian/server/internal/platform/middleware"
+	mw "penggajian/api/internal/platform/middleware"
 )
 
 // Register mendaftarkan routes fitur RBAC ke group /api/v1.

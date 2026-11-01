@@ -3,7 +3,7 @@ package spp
 import (
 	"time"
 
-	"penggajian/server/internal/platform/httpx"
+	"penggajian/api/internal/platform/httpx"
 )
 
 const dateLayoutStr = "2006-01-02"

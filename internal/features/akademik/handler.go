@@ -6,9 +6,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 
-	"penggajian/server/internal/platform/audit"
-	"penggajian/server/internal/platform/httpx"
-	"penggajian/server/internal/platform/middleware"
+	"penggajian/api/internal/platform/audit"
+	"penggajian/api/internal/platform/httpx"
+	"penggajian/api/internal/platform/middleware"
 )
 
 type Handler struct {

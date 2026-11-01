@@ -3,7 +3,7 @@ package payroll
 import (
 	"github.com/labstack/echo/v4"
 
-	mw "penggajian/server/internal/platform/middleware"
+	mw "penggajian/api/internal/platform/middleware"
 )
 
 // Register mendaftarkan routes fitur payroll ke group /api/v1.

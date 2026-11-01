@@ -3,7 +3,7 @@ package employees
 import (
 	"github.com/labstack/echo/v4"
 
-	mw "penggajian/server/internal/platform/middleware"
+	mw "penggajian/api/internal/platform/middleware"
 )
 
 // Register mendaftarkan routes fitur employees ke group /api/v1.

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"penggajian/server/internal/platform/config"
-	"penggajian/server/internal/platform/middleware"
-	"penggajian/server/internal/platform/security"
+	"penggajian/api/internal/platform/config"
+	"penggajian/api/internal/platform/middleware"
+	"penggajian/api/internal/platform/security"
 )
 
 var (

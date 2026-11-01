@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"penggajian/server/internal/platform/security"
+	"penggajian/api/internal/platform/security"
 )
 
 type seedPermission struct {

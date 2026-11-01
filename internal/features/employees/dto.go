@@ -3,7 +3,7 @@ package employees
 import (
 	"time"
 
-	"penggajian/server/internal/platform/httpx"
+	"penggajian/api/internal/platform/httpx"
 )
 
 const dateLayout = "2006-01-02"

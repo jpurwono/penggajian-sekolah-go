@@ -8,7 +8,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"penggajian/server/migrations"
+	"penggajian/api/migrations"
 )
 
 // Migrate menjalankan semua file SQL di migrations/ secara berurutan.

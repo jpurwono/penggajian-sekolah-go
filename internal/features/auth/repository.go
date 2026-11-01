@@ -7,7 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"penggajian/server/internal/platform/middleware"
+	"penggajian/api/internal/platform/middleware"
 )
 
 var ErrUserNotFound = errors.New("user tidak ditemukan")

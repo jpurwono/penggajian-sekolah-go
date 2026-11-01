@@ -9,8 +9,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 
-	"penggajian/server/internal/platform/audit"
-	"penggajian/server/internal/platform/middleware"
+	"penggajian/api/internal/platform/audit"
+	"penggajian/api/internal/platform/middleware"
 )
 
 const dateLayout = "2006-01-02"

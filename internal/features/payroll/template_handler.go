@@ -3,8 +3,8 @@ package payroll
 import (
 	"github.com/labstack/echo/v4"
 
-	"penggajian/server/internal/platform/audit"
-	"penggajian/server/internal/platform/httpx"
+	"penggajian/api/internal/platform/audit"
+	"penggajian/api/internal/platform/httpx"
 )
 
 func (h *Handler) ListTemplates(c echo.Context) error {

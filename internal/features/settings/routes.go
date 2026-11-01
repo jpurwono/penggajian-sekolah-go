@@ -4,7 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 
-	"penggajian/server/internal/platform/middleware"
+	"penggajian/api/internal/platform/middleware"
 )
 
 // Register mendaftarkan routes fitur settings ke group /api/v1.

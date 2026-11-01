@@ -7,8 +7,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"penggajian/server/internal/platform/httpx"
-	"penggajian/server/internal/platform/security"
+	"penggajian/api/internal/platform/httpx"
+	"penggajian/api/internal/platform/security"
 )
 
 var (

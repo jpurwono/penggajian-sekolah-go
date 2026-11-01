@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 
-	mw "penggajian/server/internal/platform/middleware"
+	mw "penggajian/api/internal/platform/middleware"
 )
 
 func timeNowYear() int { return time.Now().Year() }

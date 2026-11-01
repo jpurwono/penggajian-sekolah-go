@@ -3,7 +3,7 @@ package rbac
 import (
 	"time"
 
-	"penggajian/server/internal/platform/httpx"
+	"penggajian/api/internal/platform/httpx"
 )
 
 type UserResponse struct {

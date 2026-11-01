@@ -9,7 +9,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"penggajian/server/internal/platform/httpx"
+	"penggajian/api/internal/platform/httpx"
 )
 
 var ErrNotFound = errors.New("data tidak ditemukan")
